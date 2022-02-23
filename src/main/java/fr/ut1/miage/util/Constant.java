@@ -1,9 +1,12 @@
 package fr.ut1.miage.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constant {
 
     public static final String CONSTRAINT_NOMIF_STR =
@@ -25,9 +28,9 @@ public class Constant {
 
     public static final List<String> CONSTRAINT_NOMIF = Arrays.stream(CONSTRAINT_NOMIF_STR.split(","))
             .map(s -> s.substring(1, s.length() - 1))
-            .collect(Collectors.toList());
+            .toList();
     public static final List<String> CONSTRAINT_NOMTYJ = Arrays.stream(CONSTRAINT_NOMTYJ_STR.split(","))
             .map(s -> s.substring(1, s.length() - 1))
-            .collect(Collectors.toList());
+            .toList();
 
 }

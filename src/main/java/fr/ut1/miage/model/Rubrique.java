@@ -1,9 +1,10 @@
 package fr.ut1.miage.model;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
-public class Rubrique {
+public class Rubrique implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

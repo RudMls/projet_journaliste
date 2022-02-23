@@ -6,11 +6,12 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @NoArgsConstructor @AllArgsConstructor
 @Check(constraints = "PrixCar > 0 and NomTYJ IN (" + Constant.CONSTRAINT_NOMTYJ_STR + ")")
-public class TypeJour {
+public class TypeJour implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

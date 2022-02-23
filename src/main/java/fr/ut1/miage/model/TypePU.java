@@ -6,11 +6,12 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @NoArgsConstructor @AllArgsConstructor
 @Check(constraints = "NomTY IN (" + Constant.CONSTRAINT_NOMTY_STR + ")")
-public class TypePU {
+public class TypePU implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

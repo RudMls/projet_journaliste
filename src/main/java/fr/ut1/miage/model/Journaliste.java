@@ -1,10 +1,11 @@
 package fr.ut1.miage.model;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-public class Journaliste {
+public class Journaliste implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
