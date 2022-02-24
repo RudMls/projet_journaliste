@@ -9,7 +9,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Builder @NoArgsConstructor @AllArgsConstructor
+@Builder
+@NoArgsConstructor @AllArgsConstructor
 public class Journaliste implements Serializable {
 
     @Id

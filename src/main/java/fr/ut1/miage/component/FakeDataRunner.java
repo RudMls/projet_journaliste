@@ -70,12 +70,12 @@ public class FakeDataRunner implements CommandLineRunner {
 
     private void loadPaysVilleCentreDistributeur(Map<String, ArrayList<String>> worldCities) {
         worldCities.forEach((key, value) -> {
-            Pays pays = new Pays(key);
+            Pays pays = Pays.builder().nom(key).build();
             paysService.create(pays);
             value.forEach(s -> {
-                CentreDistributeur centreDistributeur = new CentreDistributeur(s, pays);
+                CentreDistributeur centreDistributeur = CentreDistributeur.builder().ville(s).pays(pays).build();
                 centreDistributeurService.create(centreDistributeur);
-                villeService.create(new Ville(s, centreDistributeur));
+                villeService.create(Ville.builder().nom(s).centreDistributeur(centreDistributeur).build());
             });
         });
     }
@@ -98,16 +98,16 @@ public class FakeDataRunner implements CommandLineRunner {
     }
 
     private void loadInstitutFormation() {
-        Constant.CONSTRAINT_NOMIF.forEach(s -> institutFormationService.create(new InstitutFormation(s)));
+        Constant.CONSTRAINT_NOMIF.forEach(s -> institutFormationService.create(InstitutFormation.builder().nom(s).build()));
     }
 
     private void loadTypeJour() {
-        Constant.CONSTRAINT_NOMTYJ.forEach(s -> typeJourService.create(new TypeJour(s, Precision.round(random.nextFloat(1, 10), 2))));
+        Constant.CONSTRAINT_NOMTYJ.forEach(s -> typeJourService.create(TypeJour.builder().nom(s).prixCaractere(Precision.round(random.nextFloat(1, 10), 2)).build()));
     }
 
     private void loadDiplome() {
         List<InstitutFormation> institutFormations = institutFormationService.getAll();
-        Constant.CONSTRAINT_NOMDY.forEach(s -> diplomeService.create(new Diplome(s, randomInList(institutFormations))));
+        Constant.CONSTRAINT_NOMDY.forEach(s -> diplomeService.create(Diplome.builder().nom(s).institutFormation(randomInList(institutFormations)).build()));
     }
 
     private void loadJournaliste() {

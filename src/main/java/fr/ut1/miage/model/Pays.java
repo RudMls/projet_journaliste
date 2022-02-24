@@ -1,12 +1,14 @@
 package fr.ut1.miage.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
+@Builder
 @NoArgsConstructor @AllArgsConstructor
 public class Pays implements Serializable {
 
@@ -18,7 +20,4 @@ public class Pays implements Serializable {
     @Column(name = "NomP")
     private String nom;
 
-    public Pays(String nom) {
-        this.nom = nom;
-    }
 }
