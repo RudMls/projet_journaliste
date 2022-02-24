@@ -14,7 +14,11 @@ public class PaysServiceImpl implements PaysService {
 
     @Override
     public void create(Pays pays) {
-        paysRepository.save(pays);
+        try {
+            paysRepository.save(pays);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

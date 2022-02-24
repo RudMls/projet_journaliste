@@ -2,7 +2,11 @@ package fr.ut1.miage.service;
 
 import fr.ut1.miage.model.InstitutFormation;
 
+import java.util.List;
+
 public interface InstitutFormationService {
 
-    public abstract void create(InstitutFormation institutFormation);
+    void create(InstitutFormation institutFormation);
+    List<InstitutFormation> getAll();
+
 }

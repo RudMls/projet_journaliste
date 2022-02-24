@@ -6,6 +6,8 @@ import fr.ut1.miage.service.TypeJourService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class TypeJourServiceImpl implements TypeJourService {
@@ -16,8 +18,17 @@ public class TypeJourServiceImpl implements TypeJourService {
     public void create(TypeJour typeJour) {
         try {
             typeJourRepository.save(typeJour);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<TypeJour> getAll() {
+        try {
+            return typeJourRepository.findAll();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 

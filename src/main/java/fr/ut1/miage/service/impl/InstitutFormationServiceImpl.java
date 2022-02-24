@@ -6,6 +6,8 @@ import fr.ut1.miage.service.InstitutFormationService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class InstitutFormationServiceImpl implements InstitutFormationService {
@@ -14,6 +16,20 @@ public class InstitutFormationServiceImpl implements InstitutFormationService {
 
     @Override
     public void create(InstitutFormation institutFormation) {
-        institutFormationRepository.save(institutFormation);
+        try {
+            institutFormationRepository.save(institutFormation);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    @Override
+    public List<InstitutFormation> getAll() {
+        try {
+            return institutFormationRepository.findAll();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

@@ -1,10 +1,15 @@
 package fr.ut1.miage.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
+@Builder @NoArgsConstructor @AllArgsConstructor
 public class Journaliste implements Serializable {
 
     @Id

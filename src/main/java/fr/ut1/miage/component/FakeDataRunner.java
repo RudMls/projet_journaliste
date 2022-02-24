@@ -6,26 +6,52 @@ import com.opencsv.exceptions.CsvValidationException;
 import fr.ut1.miage.model.*;
 import fr.ut1.miage.service.impl.*;
 import fr.ut1.miage.util.Constant;
-import lombok.AllArgsConstructor;
 import org.apache.commons.math3.util.Precision;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@AllArgsConstructor
 public class FakeDataRunner implements CommandLineRunner {
 
-    private InstitutFormationServiceImpl institutFormationService;
-    private CentreDistributeurServiceImpl centreDistributeurService;
-    private PaysServiceImpl paysService;
-    private VilleServiceImpl villeService;
-    private ClientServiceImpl clientService;
-    private TypeJourServiceImpl typeJourService;
+    private final static Random random = new Random();
+    private final static Faker faker = new Faker(new Locale("fr"));
+    private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
+
+    private final CentreDistributeurServiceImpl centreDistributeurService;
+    private final InstitutFormationServiceImpl institutFormationService;
+    private final PaysServiceImpl paysService;
+    private final VilleServiceImpl villeService;
+    private final ClientServiceImpl clientService;
+    private final TypeJourServiceImpl typeJourService;
+    private final DiplomeServiceImpl diplomeService;
+    private final JournalisteServiceImpl journalisteService;
+
+    @Autowired
+    public FakeDataRunner(CentreDistributeurServiceImpl centreDistributeurService,
+                          InstitutFormationServiceImpl institutFormationService,
+                          PaysServiceImpl paysService,
+                          VilleServiceImpl villeService,
+                          ClientServiceImpl clientService,
+                          TypeJourServiceImpl typeJourService,
+                          DiplomeServiceImpl diplomeService,
+                          JournalisteServiceImpl journalisteService) {
+        this.centreDistributeurService = centreDistributeurService;
+        this.institutFormationService = institutFormationService;
+        this.paysService = paysService;
+        this.villeService = villeService;
+        this.clientService = clientService;
+        this.typeJourService = typeJourService;
+        this.diplomeService = diplomeService;
+        this.journalisteService = journalisteService;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -33,8 +59,10 @@ public class FakeDataRunner implements CommandLineRunner {
             Map<String, ArrayList<String>> worldCities = getWorldCities();
             loadPaysVilleCentreDistributeur(worldCities);
             loadInstitutFormation();
+            loadDiplome();
             loadClient();
             loadTypeJour();
+            loadJournaliste();
         } catch (Exception e) {
             throw new Exception(e);
         }
@@ -59,8 +87,8 @@ public class FakeDataRunner implements CommandLineRunner {
         if (!villes.isEmpty()) {
             for (int i = 0; i < 100; i++) {
                 do {
-                    nom = faker().name().lastName();
-                    prenom = faker().name().firstName();
+                    nom = faker.name().lastName();
+                    prenom = faker.name().firstName();
                 } while (clientService.existsByNomAndPrenom(nom, prenom));
                 ville = randomInList(villes);
                 clientService.create(new Client(nom, prenom, ville));
@@ -74,17 +102,34 @@ public class FakeDataRunner implements CommandLineRunner {
     }
 
     private void loadTypeJour() {
-        Constant.CONSTRAINT_NOMTYJ.forEach(s -> typeJourService.create(new TypeJour(s, Precision.round(random().nextFloat(1, 10), 2))));
+        Constant.CONSTRAINT_NOMTYJ.forEach(s -> typeJourService.create(new TypeJour(s, Precision.round(random.nextFloat(1, 10), 2))));
     }
 
-    private Faker faker() { return new Faker(new Locale("fr")); }
+    private void loadDiplome() {
+        List<InstitutFormation> institutFormations = institutFormationService.getAll();
+        Constant.CONSTRAINT_NOMDY.forEach(s -> diplomeService.create(new Diplome(s, randomInList(institutFormations))));
+    }
 
-    private Random random() {
-        return new Random();
+    private void loadJournaliste() {
+        List<Diplome> diplomes = diplomeService.getAll();
+        List<TypeJour> typeJours = typeJourService.getAll();
+        try {
+            for (int i = 0; i < 100; i++) {
+                journalisteService.create(Journaliste.builder()
+                        .nom(faker.name().firstName())
+                        .prenom(faker.name().firstName())
+                        .diplome(randomInList(diplomes))
+                        .typeJour(randomInList(typeJours))
+                        .dateObtention(faker.date().between(SDF.parse("01-01-2000"), SDF.parse("01-01-2015")))
+                        .build());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private <T> T randomInList(List<T> objects) {
-        Random random = new Random();
         return objects.get(random.nextInt(objects.size()));
     }
 
