@@ -33,6 +33,9 @@ public class FakeDataRunner implements CommandLineRunner {
     private final TypeJourServiceImpl typeJourService;
     private final DiplomeServiceImpl diplomeService;
     private final JournalisteServiceImpl journalisteService;
+    private final TypePUServiceImpl typePUService;
+    private final PublicationServiceImpl publicationService;
+    private final AbonnerServiceImpl abonnerService;
 
     @Autowired
     public FakeDataRunner(CentreDistributeurServiceImpl centreDistributeurService,
@@ -42,7 +45,10 @@ public class FakeDataRunner implements CommandLineRunner {
                           ClientServiceImpl clientService,
                           TypeJourServiceImpl typeJourService,
                           DiplomeServiceImpl diplomeService,
-                          JournalisteServiceImpl journalisteService) {
+                          JournalisteServiceImpl journalisteService,
+                          TypePUServiceImpl typePUService,
+                          PublicationServiceImpl publicationService,
+                          AbonnerServiceImpl abonnerService) {
         this.centreDistributeurService = centreDistributeurService;
         this.institutFormationService = institutFormationService;
         this.paysService = paysService;
@@ -51,6 +57,9 @@ public class FakeDataRunner implements CommandLineRunner {
         this.typeJourService = typeJourService;
         this.diplomeService = diplomeService;
         this.journalisteService = journalisteService;
+        this.typePUService = typePUService;
+        this.publicationService = publicationService;
+        this.abonnerService = abonnerService;
     }
 
     @Override
@@ -63,6 +72,8 @@ public class FakeDataRunner implements CommandLineRunner {
             loadClient();
             loadTypeJour();
             loadJournaliste();
+            loadTypePU();
+            loadPublication();
         } catch (Exception e) {
             throw new Exception(e);
         }
@@ -126,6 +137,31 @@ public class FakeDataRunner implements CommandLineRunner {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void loadTypePU() {
+        Constant.CONSTRAINT_NOMTY.forEach(s -> {
+            typePUService.create(TypePU.builder().nom(s).build());
+        });
+    }
+    private void loadPublication() {
+        List<Journaliste> journalistes = journalisteService.getAll();
+        List<TypePU> typePUS = typePUService.getAll();
+        for (int i = 0; i < 500; i++) {
+            publicationService.create(
+                    Publication.builder()
+                            .periodicite(randomInList(Constant.CONSTRAINT_PERIODICITE))
+                            .journaliste(randomInList(journalistes))
+                            .typePU(randomInList(typePUS))
+                            .build()
+            );
+        }
+    }
+
+    private void loadAbonner() {
+        List<Client> clients = clientService.getAll();
+        List<Publication> publications = publicationService.getAll();
 
     }
 

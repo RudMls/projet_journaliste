@@ -32,6 +32,12 @@ public class Constant {
     public static final List<String> CONSTRAINT_NOMTYJ = Arrays.stream(CONSTRAINT_NOMTYJ_STR.split(","))
             .map(s -> s.substring(1, s.length() - 1))
             .toList();
+    public static final List<String> CONSTRAINT_PERIODICITE = Arrays.stream(CONSTRAINT_PERIODICITE_STR.split(","))
+            .map(s -> s.substring(1, s.length() - 1))
+            .toList();
+    public static final List<String> CONSTRAINT_NOMTY = Arrays.stream(CONSTRAINT_NOMTY_STR.split(","))
+            .map(s -> s.substring(1, s.length() - 1))
+            .toList();
     public static final List<String> CONSTRAINT_NOMDY = Arrays.asList(
             "BUT information-communication", "Bachelor e-journalisme", "Journalisme de sport",
             "Diplôme de l'Institut d'études politiques de Paris", "Master mention journalisme",

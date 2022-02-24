@@ -1,5 +1,6 @@
 package fr.ut1.miage.service.impl;
 
+import fr.ut1.miage.exception.JpaException;
 import fr.ut1.miage.model.Diplome;
 import fr.ut1.miage.repository.DiplomeRepository;
 import fr.ut1.miage.service.DiplomeService;
@@ -18,8 +19,8 @@ public class DiplomeServiceImpl implements DiplomeService {
     public void create(Diplome diplome) {
         try {
             diplomeRepository.save(diplome);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to create ", ex);
         }
     }
 
@@ -27,8 +28,8 @@ public class DiplomeServiceImpl implements DiplomeService {
     public List<Diplome> getAll() {
         try {
             return diplomeRepository.findAll();
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to get all ", ex);
         }
     }
 

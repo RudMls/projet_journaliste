@@ -1,5 +1,6 @@
 package fr.ut1.miage.service.impl;
 
+import fr.ut1.miage.exception.JpaException;
 import fr.ut1.miage.model.CentreDistributeur;
 import fr.ut1.miage.repository.CentreDistributeurRepository;
 import fr.ut1.miage.service.CentreDistributeurService;
@@ -16,8 +17,8 @@ public class CentreDistributeurServiceImpl implements CentreDistributeurService 
     public void create(CentreDistributeur centreDistributeur) {
         try {
             centreDistributeurRepository.save(centreDistributeur);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to create centreDistributeur", ex);
         }
     }
 
