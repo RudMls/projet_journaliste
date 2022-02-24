@@ -5,6 +5,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import fr.ut1.miage.model.*;
 import fr.ut1.miage.model.embeddable.AbonnerId;
+import fr.ut1.miage.model.embeddable.DiffuserPUId;
+import fr.ut1.miage.model.embeddable.LivrerId;
 import fr.ut1.miage.service.impl.*;
 import fr.ut1.miage.util.Constant;
 import org.apache.commons.math3.util.Precision;
@@ -36,7 +38,11 @@ public class FakeDataRunner implements CommandLineRunner {
     private final JournalisteServiceImpl journalisteService;
     private final TypePUServiceImpl typePUService;
     private final PublicationServiceImpl publicationService;
+    private final NumeroServiceImpl numeroService;
     private final AbonnerServiceImpl abonnerService;
+    private final RubriqueServiceImpl rubriqueService;
+    private final DiffuserPUServiceImpl diffuserPUService;
+    private final LivrerServiceImpl livrerService;
 
     @Autowired
     public FakeDataRunner(CentreDistributeurServiceImpl centreDistributeurService,
@@ -49,7 +55,11 @@ public class FakeDataRunner implements CommandLineRunner {
                           JournalisteServiceImpl journalisteService,
                           TypePUServiceImpl typePUService,
                           PublicationServiceImpl publicationService,
-                          AbonnerServiceImpl abonnerService) {
+                          NumeroServiceImpl numeroService,
+                          AbonnerServiceImpl abonnerService,
+                          RubriqueServiceImpl rubriqueService,
+                          DiffuserPUServiceImpl diffuserPUService,
+                          LivrerServiceImpl livrerService) {
         this.centreDistributeurService = centreDistributeurService;
         this.institutFormationService = institutFormationService;
         this.paysService = paysService;
@@ -60,22 +70,58 @@ public class FakeDataRunner implements CommandLineRunner {
         this.journalisteService = journalisteService;
         this.typePUService = typePUService;
         this.publicationService = publicationService;
+        this.numeroService = numeroService;
         this.abonnerService = abonnerService;
+        this.rubriqueService = rubriqueService;
+        this.diffuserPUService = diffuserPUService;
+        this.livrerService = livrerService;
     }
 
     @Override
     public void run(String... args) throws Exception {
         try {
+            // Pays & Ville & CentreDistributeur
             Map<String, ArrayList<String>> worldCities = getWorldCities();
             loadPaysVilleCentreDistributeur(worldCities);
+            List<Ville> villes = villeService.getAll();
+            // InstitutFormation
             loadInstitutFormation();
-            loadDiplome();
-            loadClient();
+            List<InstitutFormation> institutFormations = institutFormationService.getAll();
+            // TypeJour
             loadTypeJour();
-            loadJournaliste();
+            List<TypeJour> typeJours = typeJourService.getAll();
+            // TypePU
             loadTypePU();
-            loadPublication();
-            loadAbonner();
+            List<TypePU> typePUS = typePUService.getAll();
+            // Diplome
+            loadDiplome(institutFormations);
+            List<Diplome> diplomes = diplomeService.getAll();
+            // Client
+            loadClient(villes);
+            List<Client> clients = clientService.getAll();
+            // Journaliste
+            loadJournaliste(diplomes, typeJours);
+            List<Journaliste> journalistes = journalisteService.getAll();
+            // Publication
+            loadPublication(journalistes, typePUS);
+            List<Publication> publications = publicationService.getAll();
+            // Numero
+            loadNumero(publications);
+            List<Numero> numeros = numeroService.getAll();
+            // Rubrique
+            loadRubrique(journalistes, publications);
+            List<Rubrique> rubriques = rubriqueService.getAll();
+            // Livrer
+            loadLivrer(numeros, clients);
+            // Abonner
+            loadAbonner(clients, publications);
+            // DiffuserPU
+            loadDiffuserPU(publications);
+            // EcrireArticle
+            loadEcrireArticle(journalistes, numeros, rubriques);
+            // CoutArticle
+            loadCoutArticle(rubriques, journalistes);
+
         } catch (Exception e) {
             throw new Exception(e);
         }
@@ -93,8 +139,7 @@ public class FakeDataRunner implements CommandLineRunner {
         });
     }
 
-    private void loadClient() {
-        List<Ville> villes = villeService.getAll();
+    private void loadClient(List<Ville> villes) {
         String nom;
         String prenom;
         Ville ville;
@@ -124,14 +169,15 @@ public class FakeDataRunner implements CommandLineRunner {
         Constant.CONSTRAINT_NOMTYJ.forEach(s -> typeJourService.create(TypeJour.builder().nom(s).prixCaractere(Precision.round(random.nextFloat(1, 10), 2)).build()));
     }
 
-    private void loadDiplome() {
-        List<InstitutFormation> institutFormations = institutFormationService.getAll();
+    private void loadTypePU() {
+        Constant.CONSTRAINT_NOMTY.forEach(s -> typePUService.create(TypePU.builder().nom(s).build()));
+    }
+
+    private void loadDiplome(List<InstitutFormation> institutFormations) {
         Constant.CONSTRAINT_NOMDY.forEach(s -> diplomeService.create(Diplome.builder().nom(s).institutFormation(randomInList(institutFormations)).build()));
     }
 
-    private void loadJournaliste() {
-        List<Diplome> diplomes = diplomeService.getAll();
-        List<TypeJour> typeJours = typeJourService.getAll();
+    private void loadJournaliste(List<Diplome> diplomes, List<TypeJour> typeJours) {
         try {
             for (int i = 0; i < 100; i++) {
                 journalisteService.create(Journaliste.builder()
@@ -148,30 +194,44 @@ public class FakeDataRunner implements CommandLineRunner {
 
     }
 
-    private void loadTypePU() {
-        Constant.CONSTRAINT_NOMTY.forEach(s -> typePUService.create(TypePU.builder().nom(s).build()));
-    }
-
-    private void loadPublication() {
-        List<Journaliste> journalistes = journalisteService.getAll();
-        List<TypePU> typePUS = typePUService.getAll();
-        for (int i = 0; i < 500; i++) {
+    private void loadPublication(List<Journaliste> journalistes, List<TypePU> typePUS) {
+        for (int i = 0; i < 200; i++) {
             publicationService.create(
-                    Publication.builder()
-                            .periodicite(randomInList(Constant.CONSTRAINT_PERIODICITE))
-                            .journaliste(randomInList(journalistes))
-                            .typePU(randomInList(typePUS))
-                            .build()
+                Publication.builder()
+                    .groupePresse(randomInList(Constant.CONSTRAINT_GROUPE_PRESSE))
+                    .periodicite(randomInList(Constant.CONSTRAINT_PERIODICITE))
+                    .journaliste(randomInList(journalistes))
+                    .typePU(randomInList(typePUS))
+                .build()
             );
         }
     }
 
-    private void loadAbonner() {
-        List<Client> clients = clientService.getAll().stream()
-                .filter(client -> client.getCode() % 7 != 0)
-                .toList();
-        List<Publication> publications = publicationService.getAll();
-        clients.forEach(client -> {
+    private void loadNumero(List<Publication> publications) {
+        for (Publication publication: publications) {
+            for (int i = 0; i <= random.nextInt(1, 7); i++) {
+                numeroService.create(
+                    Numero.builder()
+                        .publication(publication)
+                    .build()
+                );
+            }
+        }
+    }
+
+    private void loadRubrique(List<Journaliste> journalistes, List<Publication> publications) {
+        for (int i = 0; i < 300; i++) {
+            rubriqueService.create(
+                Rubrique.builder()
+                    .journaliste(randomInList(journalistes))
+                    .publication(randomInList(publications))
+                .build()
+            );
+        }
+    }
+
+    private void loadAbonner(List<Client> clients, List<Publication> publications) {
+        clients.stream().filter(client -> client.getCode() % 7 != 0).forEach(client -> {
             Collections.shuffle(publications);
             publications.stream()
                 .limit(random.nextInt((int) Precision.round(publications.size() * 0.05, 0)))
@@ -188,6 +248,45 @@ public class FakeDataRunner implements CommandLineRunner {
                     }
                 });
         });
+    }
+
+    private void loadCoutArticle(List<Rubrique> rubriques, List<Journaliste> journalistes) {
+    }
+
+    private void loadDiffuserPU(List<Publication> publications) {
+        for (int annee = 2015; annee <= 2022; annee++) {
+            for (Publication publication : publications) {
+                diffuserPUService.create(
+                    DiffuserPU.builder()
+                        .id(DiffuserPUId.builder()
+                            .publication(publication)
+                            .annee(annee)
+                        .build())
+                        .nombreDiffusions(random.nextInt(40, 200))
+                    .build()
+                );
+            }
+        }
+    }
+
+    private void loadEcrireArticle(List<Journaliste> journalistes,
+                                   List<Numero> numeros,
+                                   List<Rubrique> rubriques) {
+    }
+
+    private void loadLivrer(List<Numero> numeros, List<Client> clients) {
+        numeros.forEach(numero -> livrerService.create(
+            Livrer.builder()
+                .id(LivrerId.builder()
+                    .client(randomInList(clients))
+                    .numero(numero)
+                .build())
+            .build()
+        ));
+    }
+
+    private void loadPayer(List<Publication> publications, List<Pays> pays) {
+
     }
 
     private <T> T randomInList(List<T> objects) {

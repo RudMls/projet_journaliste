@@ -43,5 +43,10 @@ public class Constant {
             "Diplôme de l'Institut d'études politiques de Paris", "Master mention journalisme",
             "Diplôme de grand établissement mention journalisme"
     );
+    public static final List<String> CONSTRAINT_GROUPE_PRESSE = Arrays.asList(
+            "Hachette", "Amaury", "Marie-Claire", "Bayard", "Groupe Milan",
+            "Dassault", "SOC Presse", "Rossel", "Roularta Media Group",
+            "La Vie/Le Monde", "Groupe Fleurus Presse", "Prisma", "France Antilles"
+    );
 
 }
