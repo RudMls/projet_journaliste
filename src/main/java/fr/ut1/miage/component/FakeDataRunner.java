@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import fr.ut1.miage.model.*;
+import fr.ut1.miage.model.embeddable.AbonnerId;
 import fr.ut1.miage.service.impl.*;
 import fr.ut1.miage.util.Constant;
 import org.apache.commons.math3.util.Precision;
@@ -21,9 +22,9 @@ import java.util.stream.Collectors;
 @Component
 public class FakeDataRunner implements CommandLineRunner {
 
-    private final static Random random = new Random();
-    private final static Faker faker = new Faker(new Locale("fr"));
-    private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
+    private final Random random = new Random();
+    private final Faker faker = new Faker(new Locale("fr"));
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
     private final CentreDistributeurServiceImpl centreDistributeurService;
     private final InstitutFormationServiceImpl institutFormationService;
@@ -74,6 +75,7 @@ public class FakeDataRunner implements CommandLineRunner {
             loadJournaliste();
             loadTypePU();
             loadPublication();
+            loadAbonner();
         } catch (Exception e) {
             throw new Exception(e);
         }
@@ -93,7 +95,8 @@ public class FakeDataRunner implements CommandLineRunner {
 
     private void loadClient() {
         List<Ville> villes = villeService.getAll();
-        String nom, prenom;
+        String nom;
+        String prenom;
         Ville ville;
         if (!villes.isEmpty()) {
             for (int i = 0; i < 100; i++) {
@@ -102,10 +105,15 @@ public class FakeDataRunner implements CommandLineRunner {
                     prenom = faker.name().firstName();
                 } while (clientService.existsByNomAndPrenom(nom, prenom));
                 ville = randomInList(villes);
-                clientService.create(new Client(nom, prenom, ville));
+                clientService.create(
+                    Client.builder()
+                        .nom(nom)
+                        .prenom(prenom)
+                        .ville(ville)
+                    .build()
+                );
             }
         }
-
     }
 
     private void loadInstitutFormation() {
@@ -131,7 +139,7 @@ public class FakeDataRunner implements CommandLineRunner {
                         .prenom(faker.name().firstName())
                         .diplome(randomInList(diplomes))
                         .typeJour(randomInList(typeJours))
-                        .dateObtention(faker.date().between(SDF.parse("01-01-2000"), SDF.parse("01-01-2015")))
+                        .dateObtention(faker.date().between(sdf.parse("01-01-2000"), sdf.parse("01-01-2015")))
                         .build());
             }
         } catch (ParseException e) {
@@ -141,10 +149,9 @@ public class FakeDataRunner implements CommandLineRunner {
     }
 
     private void loadTypePU() {
-        Constant.CONSTRAINT_NOMTY.forEach(s -> {
-            typePUService.create(TypePU.builder().nom(s).build());
-        });
+        Constant.CONSTRAINT_NOMTY.forEach(s -> typePUService.create(TypePU.builder().nom(s).build()));
     }
+
     private void loadPublication() {
         List<Journaliste> journalistes = journalisteService.getAll();
         List<TypePU> typePUS = typePUService.getAll();
@@ -160,9 +167,27 @@ public class FakeDataRunner implements CommandLineRunner {
     }
 
     private void loadAbonner() {
-        List<Client> clients = clientService.getAll();
+        List<Client> clients = clientService.getAll().stream()
+                .filter(client -> client.getCode() % 7 != 0)
+                .toList();
         List<Publication> publications = publicationService.getAll();
-
+        clients.forEach(client -> {
+            Collections.shuffle(publications);
+            publications.stream()
+                .limit(random.nextInt((int) Precision.round(publications.size() * 0.05, 0)))
+                .forEach(publication -> {
+                    try {
+                        AbonnerId abonnerId = AbonnerId.builder()
+                                .client(client)
+                                .publication(publication)
+                                .dateDebut(faker.date().between(sdf.parse("01-01-2015"), new Date()))
+                                .build();
+                        abonnerService.create(Abonner.builder().id(abonnerId).build());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                });
+        });
     }
 
     private <T> T randomInList(List<T> objects) {

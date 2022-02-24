@@ -1,5 +1,6 @@
 package fr.ut1.miage.service.impl;
 
+import fr.ut1.miage.exception.JpaException;
 import fr.ut1.miage.model.InstitutFormation;
 import fr.ut1.miage.repository.InstitutFormationRepository;
 import fr.ut1.miage.service.InstitutFormationService;
@@ -18,8 +19,8 @@ public class InstitutFormationServiceImpl implements InstitutFormationService {
     public void create(InstitutFormation institutFormation) {
         try {
             institutFormationRepository.save(institutFormation);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to create ", ex);
         }
     }
 
@@ -27,8 +28,8 @@ public class InstitutFormationServiceImpl implements InstitutFormationService {
     public List<InstitutFormation> getAll() {
         try {
             return institutFormationRepository.findAll();
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to get all ", ex);
         }
     }
 

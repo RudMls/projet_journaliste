@@ -1,5 +1,6 @@
 package fr.ut1.miage.service.impl;
 
+import fr.ut1.miage.exception.JpaException;
 import fr.ut1.miage.model.Ville;
 import fr.ut1.miage.repository.VilleRepository;
 import fr.ut1.miage.service.VilleService;
@@ -16,12 +17,20 @@ public class VilleServiceImpl implements VilleService {
 
     @Override
     public void create(Ville ville) {
-        villeRepository.save(ville);
+        try {
+            villeRepository.save(ville);
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to create ", ex);
+        }
     }
 
     @Override
     public List<Ville> getAll() {
-        return villeRepository.findAll();
+        try {
+            return villeRepository.findAll();
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to get all ", ex);
+        }
     }
 
 }

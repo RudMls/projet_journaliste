@@ -1,12 +1,15 @@
 package fr.ut1.miage.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
+@Builder @Getter
 @NoArgsConstructor @AllArgsConstructor
 public class Client implements Serializable {
 
@@ -24,16 +27,5 @@ public class Client implements Serializable {
     @ManyToOne
     @JoinColumn(name = "CodeV")
     private Ville ville;
-
-    public Client(String nom, String prenom) {
-        this.nom = nom;
-        this.prenom = prenom;
-    }
-
-    public Client(String nom, String prenom, Ville ville) {
-        this.nom = nom;
-        this.prenom = prenom;
-        this.ville = ville;
-    }
 
 }

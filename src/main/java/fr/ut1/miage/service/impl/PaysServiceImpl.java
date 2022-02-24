@@ -1,5 +1,6 @@
 package fr.ut1.miage.service.impl;
 
+import fr.ut1.miage.exception.JpaException;
 import fr.ut1.miage.model.Pays;
 import fr.ut1.miage.repository.PaysRepository;
 import fr.ut1.miage.service.PaysService;
@@ -16,8 +17,8 @@ public class PaysServiceImpl implements PaysService {
     public void create(Pays pays) {
         try {
             paysRepository.save(pays);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (JpaException ex) {
+            throw new JpaException("Failed to create ", ex);
         }
     }
 
